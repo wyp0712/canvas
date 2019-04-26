@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+    }
+
+    .wrap {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+    <canvas id="myCanvas"></canvas>
+  </div>
+
+
+
+  <script>
+    var myCanvas = document.querySelector('#myCanvas');
+    var wrap = document.querySelector('.wrap');
+    myCanvas.width = wrap.offsetWidth;
+    myCanvas.height = wrap.offsetHeight / 2;
+
+    var api = myCanvas.getContext('2d');
+    drawClock()
+    setInterval(drawClock, 1000)
+
+    function drawClock() {
+
+      // api.clearRect(0, 0, 500, 500);
+
+
+      var day = new Date();
+      var sec = day.getSeconds();
+      var min = day.getMinutes();
+      var hours = day.getHours();
+
+      // 小时要获取浮点数
+      var hours = hours + min / 60;
+
+      var hours = hours > 12 ? hours - 12 : hours;
+       
+      var x = wrap.offsetWidth / 2;
+      var y = wrap.offsetHeight / 4;
+
+      // 先画一条线。旋转。每次旋转6度
+      for (var i = 0; i < 60; i++) {
+        api.save();
+        api.beginPath();
+        api.translate(x, y); // 改变圆
+        api.rotate(i * 6 * Math.PI / 180);
+        api.moveTo(0, -150);
+        api.lineTo(0, 150);
+        api.stroke()
+        api.restore()
+      }
+
+      api.save();
+      api.beginPath();
+      api.arc(x, y, 140, 0, Math.PI * 2)
+      api.fillStyle = '#fff';
+      api.fill()
+
+      for (var i = 0; i < 12; i++) {
+        api.save();
+        api.beginPath();
+        api.lineWidth = 3;
+        api.strokeStyle = 'blue';
+        api.translate(x, y); // 改变圆
+        api.rotate(i * 30 * Math.PI / 180);
+        api.moveTo(0, -130);
+        api.lineTo(0, 130);
+        api.stroke()
+        api.restore()
+      }
+
+      api.save();
+      api.beginPath();
+      api.arc(x, y, 120, 0, Math.PI * 2)
+      api.fillStyle = '#fff';
+      api.fill()
+
+      // 绘制秒针；
+      api.save();
+      api.beginPath();
+      api.lineWidth = 1;
+      api.strokeStyle = 'red';
+
+      api.translate(x, y);
+      api.rotate(sec * 6 * Math.PI / 180);
+      api.moveTo(0, -120);
+      api.lineTo(0, 12);
+      api.stroke()
+      api.restore()
+
+      // 绘制分针；
+      api.save();
+      api.beginPath();
+      api.lineWidth = 2;
+      api.strokeStyle = 'blue';
+      api.translate(x, y);
+      api.rotate(min * 6 * Math.PI / 180);
+      api.moveTo(0, -110);
+      api.lineTo(0, 12);
+      api.stroke()
+      api.restore()
+
+      // 绘制时针；
+      api.save();
+      api.beginPath();
+      api.lineWidth = 3;
+      api.strokeStyle = 'gray';
+      api.translate(x, y);
+      api.rotate(hours * 30 * Math.PI / 180);
+      api.moveTo(0, -100);
+      api.lineTo(0, 12);
+      api.stroke()
+      api.restore()
+    }
+
+
+
+
+
+  </script>
+
+</body>
+
+</html>
