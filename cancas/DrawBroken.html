@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #el {
+            width: 700px;
+            height: 500px;
+        }
+        
+        canvas {
+            border: 1px solid lightcoral
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="el">
+
+    </div>
+    <script src="./data/data.js"></script>
+    <script>
+        function DrawBroken(option) {
+            Object.assign(this, option)
+        }
+
+
+        DrawBroken.prototype = {
+            init() {
+                this.creatDom()
+                this.drawY()
+                this.drawX()
+                this.drawXTip()
+                this.drawYTip()
+                this.drawBroken()
+                this.drawCircle()
+            },
+            creatDom() {
+                let $canvas = document.createElement("canvas")
+                let $el = document.querySelector(this.el)
+                $canvas.style.margin = "10px"
+                this.ctxW = $el.clientWidth - 20
+                this.ctxH = $el.clientHeight - 20
+                $canvas.width = this.ctxW
+                $canvas.height = this.ctxH
+                $el.appendChild($canvas)
+                this.context = $canvas.getContext("2d")
+            },
+
+            //绘制y轴
+            drawY() {
+                let startx = this.padding[0]
+                let starty = this.padding[1]
+                let endx = this.padding[0]
+                let endy = this.ctxH - this.padding[3]
+                this.drawLine(startx, starty, endx, endy)
+            },
+            //绘制x轴
+            drawX() {
+                let startx = this.padding[0]
+                let starty = this.ctxH - this.padding[3]
+                let endx = this.ctxW - this.padding[2]
+                let endy = this.ctxH - this.padding[3]
+                this.drawLine(startx, starty, endx, endy)
+
+            },
+            //绘制x轴刻度
+            drawXTip() {
+                let xData = this.data.xAxis.data
+                let distance = (this.ctxW - this.padding[0] - this.padding[2]) / (xData.length - 1)
+                this.distanceX = distance
+                xData.forEach((i, index) => {
+                    let startX = index * distance + this.padding[0]
+                    let startY = this.ctxH - this.padding[3]
+                    let endX = index * distance + this.padding[0]
+                    let endY = startY + 10
+                    this.drawLine(startX, startY, endX, endY)
+                    drawTextX.call(this, i, endX, endY + 10)
+                });
+                // 绘制x轴文字
+                function drawTextX(text, x, y) {
+                    this.context.textBaseline = "middle"
+                    this.context.textAlign = 'center';
+                    this.context.fillText(text, x, y);
+                }
+            },
+            //绘制y轴刻度
+            drawYTip() {
+                let yData = this.computeY()
+
+                let distance = (this.ctxH - this.padding[1] - this.padding[3]) / (yData.length - 1)
+
+                yData.forEach((i, index) => {
+                    let startX = this.padding[0]
+                    let startY = (this.ctxH - this.padding[3]) - index * distance
+                    let endX = startX - 10
+                    let endY = startY
+                    this.drawLine(startX, startY, endX, endY)
+                    drawTextY.call(this, i + this.data.yAxis.axisLabel.formatter, endX - 10, endY)
+                });
+                // // 绘制y轴文字
+                function drawTextY(text, x, y) {
+                    this.context.textBaseline = "middle"
+                    this.context.textAlign = 'right';
+                    this.context.fillText(text, x, y);
+                }
+
+
+            },
+
+            //动态计算y轴的标识
+
+            computeY() {
+                let series = this.data.series
+                let newData = []
+                series.forEach((i) => {
+                    newData.push(...i.data)
+                })
+                newData.sort((a, b) => {
+                    return a - b
+                })
+
+                let distance = this.data.yAxis.distance
+                let dataLength = (newData[newData.length - 1] - newData[0]) / distance
+                let yData = [] //y轴显示的标识
+                for (let i = 0; i <= distance; i++) {
+                    yData.push((newData[0] + i * dataLength))
+                }
+                return yData
+            },
+            // 画直线
+            drawLine(x1, y1, x2, y2) {
+                // 起点和终点
+                this.context.beginPath();
+                this.context.moveTo(x1, y1);
+                this.context.lineTo(x2, y2);
+                this.context.stroke();
+                this.context.closePath();
+            },
+            // 计算y轴当前值对应的纵轴坐标
+            computedEveryY(item) {
+                let yData = this.computeY()
+                let yInit = ((item - yData[0]) / (yData[yData.length - 1] - yData[0])) * (this.ctxH - this.padding[1] - this.padding[3])
+
+                let everyY = this.ctxH - this.padding[3] - yInit
+                return everyY
+            },
+            drawBroken() {
+                let series = this.data.series
+                series.forEach((i) => {
+                    this.context.beginPath()
+                    i.data.forEach((j, index) => {
+                        if (index == 0) {
+                            this.context.moveTo(this.distanceX * index + this.padding[0], this.computedEveryY(j));
+                        } else {
+                            this.context.lineTo(this.distanceX * index + this.padding[0], this.computedEveryY(j))
+
+                        }
+                    })
+                    this.context.strokeStyle = i.color || "black";
+                    this.context.lineWidth = i.lineWidth || 2
+                    this.context.stroke()
+                })
+            },
+            drawCircle(x, y) {
+                let series = this.data.series
+                series.forEach((i) => {
+                    this.context.beginPath()
+                    i.data.forEach((j, index) => {
+
+                        if (index != 0) {
+                            this.context.beginPath()
+                            this.context.arc(this.distanceX * index + this.padding[0], this.computedEveryY(j), i.tipCircle, 0, 2 * Math.PI)
+                            this.context.stroke()
+                        }
+                    })
+                })
+
+            }
+        }
+
+        var obj = new DrawBroken({
+            el: "#el",
+            data: option,
+            padding: [80, 100, 50, 50] //l,t,r,b
+        })
+        obj.init()
+    </script>
+</body>
+
+</html>

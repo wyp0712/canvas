@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="500" height="300"></canvas>
+    <script>
+        var $canvas = document.querySelector("canvas")
+        var context = $canvas.getContext("2d")
+
+        // var data = [50, 29, 60, 80, 50, 120, 45]
+        function mathRandom() {
+            return Math.floor(Math.random() * 150 + 50)
+        }
+        var data = []
+        for (let index = 0; index < 11; index++) {
+            data.push({
+                x: index * 50,
+                y: mathRandom()
+            })
+        }
+        data.forEach((i, index) => {
+            if (index == 0) {
+                context.moveTo(i.x, i.y)
+            } else {
+                context.lineTo(i.x, i.y);
+            }
+        })
+        context.lineTo(500, 300)
+        context.lineTo(0, 300)
+        context.closePath();
+        context.fillStyle = 'red';
+        context.fill();
+    </script>
+</body>
+
+</html>
